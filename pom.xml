@@ -22,6 +22,14 @@
         <url/>
     </scm>
 
+    <!--
+    war: java EE için kullanalım. JSP,servlet,html,css3
+    jar: Spring Boot için kullanalım
+    -->
+    <!--apache tomcat manuel için war ekliyorum-->
+    <!--<packaging>war</packaging>-->
+    <packaging>jar</packaging>
+
     <properties>
         <encoding>UTF-8</encoding>
         <java.version>23</java.version>
@@ -30,12 +38,28 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
+        <!--Maven Compiler-->
+        <maven.compiler.release>23</maven.compiler.release>
         <maven.compiler.source>23</maven.compiler.source>
         <maven.compiler.target>23</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
     <!-- start dependencies-->
     <dependencies>
+
+        <!-- Java Cryptography Extension (JCE) İçin Gerekli -->
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.1</version>
+        </dependency>
+
+        <!-- Java'da Şifreleme (AES) İçin Apache Commons Codec -->
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.15</version>
+        </dependency>
 
         <!-- RDBMS MYSQL-->
         <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
@@ -50,7 +74,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.34</version>
+            <version>1.18.26</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
