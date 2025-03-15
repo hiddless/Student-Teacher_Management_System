@@ -4,7 +4,7 @@ import com.hiddless.utils.SpecialColours;
 
 import java.io.*;
 
-public class FileHandler implements IFileHandlerInterface{
+public class FileHandler implements IFileHandlerInterface {
 
     /// Field
     private String filePath="";
@@ -31,6 +31,7 @@ public class FileHandler implements IFileHandlerInterface{
         }
     }
 
+    /// Write file
     @Override
     public synchronized void writeFile(String data){
         try(BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(filePath,true))) {
@@ -42,11 +43,12 @@ public class FileHandler implements IFileHandlerInterface{
         }
     }
 
+    /// Read File
     @Override
     public synchronized void readFile(String data) {
         try(BufferedReader bufferedReader = new BufferedReader(new FileReader(filePath))) {
             String line="";
-            while ((line= bufferedReader.readLine()) !=null) {
+            while ((line= bufferedReader.readLine())!=null) {
                 System.out.println("Read from file."+line);
             }
         }catch (IOException ioException) {
@@ -65,7 +67,4 @@ public class FileHandler implements IFileHandlerInterface{
         this.filePath = filePath;
     }
 
-    public static void main(String[] args) {
-
-    }
 }

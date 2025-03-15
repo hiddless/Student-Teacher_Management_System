@@ -80,6 +80,6 @@ public class StudentDao implements IDaoGenerics<StudentDto> {
                         student.getResultTerm() + "," +
                         student.getStatus() + "," +
                         student.getBirthDate() + "," +
-                        student.geteStudentType();
+                        student.getEStudentType();
     }
 }

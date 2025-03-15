@@ -1,14 +1,9 @@
 package com.hiddless.dto;
 
 import com.hiddless.utils.SpecialColours;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 import java.time.LocalDate;
-
-@Builder
-@EqualsAndHashCode
 
 public class StudentDto extends PersonDto implements Serializable {
 
@@ -25,108 +20,62 @@ public class StudentDto extends PersonDto implements Serializable {
     static {
         System.out.println(SpecialColours.GREEN + "static StudentDto downloaded" + SpecialColours.RESET);
     }
-    /// Constructor with Constructor
-    public StudentDto(Integer id, String name, String surname, LocalDate birthDate, Double midTerm,Double finalTerm, EStudentType eStudentType, ERole eRole) {
-        super(id,name ,surname,birthDate);
-        this.midTerm = midTerm;
-        this.finalTerm = finalTerm;
+
+    /// Constructor without Parameters
+    public StudentDto() {
+        super();
+        this.eStudentType = EStudentType.OTHER;
+        this.eRole = ERole.STUDENT;
+        this.midTerm = 0.0;
+        this.finalTerm = 0.0;
+        this.resultTerm = calculateResult();
+        this.status = determineStatus();
+    }
+
+    /// Contructor with Parameter
+    public StudentDto(Integer id, String name, String surname , LocalDate birthDate,
+                      Double midTerm, Double finalTerm, EStudentType eStudentType, ERole eRole) {
+        super(id,name,surname,birthDate);
+        this.midTerm = (midTerm != null) ? midTerm : 0.0;
+        this.finalTerm = (finalTerm != null) ? finalTerm : 0.0;
         this.resultTerm = calculateResult();
         this.status = determineStatus();
         this.eStudentType = eStudentType;
-        this.eRole= eRole;
+        this.eRole = eRole;
     }
 
-    @Override
-    public void displayInfo() {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder
-                .append("Öğrenci ")
-                .append(name)
-                .append("")
-                .append(surname)
-                .append("")
-                .append(eRole)
-                .append("")
-                .append(eStudentType)
-                .append("")
-                .append(midTerm)
-                .append("")
-                .append(finalTerm)
-                .append("")
-                .append(resultTerm)
-                .append("")
-        ;
-        System.out.println(stringBuilder.toString());
-    }
-
+    /// Methods
     private Double calculateResult() {
-        if (midTerm == null|| finalTerm == null)
-            return 0.0;
-        else
-            return (midTerm * 0.4 + finalTerm * 0.6);
+        return ((midTerm != null ? midTerm : 0.0) * 0.4 + (finalTerm != null ? finalTerm : +0.6));
     }
 
-    private String determineStatus(){
-        if (this.resultTerm == null) return "Unknown";
-        return (this.resultTerm >= 50.0) ? "Geçti" : "Kaldı";
-    }
-
-
-    @Override
-    public String toString() {
+    private String determineStatus() {
         return "StudentDto{" +
-                "eStudentType=" + eStudentType +
+                "id=" + getId() +
+                ", name=!" + getName() + '\'' +
+                ", surname='" + getSurname() + '\'' +
+                ", birthDate=" + getBirthDate() +
+                ", eStudentType=" + eStudentType +
                 ", eRole=" + eRole +
                 ", midTerm=" + midTerm +
                 ", finalTerm=" + finalTerm +
                 ", resultTerm=" + resultTerm +
                 ", status='" + status + '\'' +
-                ", id=" + id +
-                ", name='" + name + '\'' +
-                ", surname='" + surname + '\'' +
-                ", birthDate=" + birthDate +
-                ", createdDate=" + createdDate +
                 "} " + super.toString();
     }
 
-    public EStudentType geteStudentType() {
+    @Override
+    public void displayInfo() {
+        System.out.println(this.toString());
+    }
+
+    /// Getter and Setter
+    public EStudentType getEStudentType() {
         return eStudentType;
     }
 
-    public void seteStudentType(EStudentType eStudentType) {
+    public void setEStudentType(EStudentType eStudentType) {
         this.eStudentType = eStudentType;
-    }
-
-    public Double getMidTerm() {
-        return midTerm;
-    }
-
-    public void setMidTerm(Double midTerm) {
-        this.midTerm = midTerm;
-    }
-
-    public Double getFinalTerm() {
-        return finalTerm;
-    }
-
-    public void setFinalTerm(Double finalTerm) {
-        this.finalTerm = finalTerm;
-    }
-
-    public Double getResultTerm() {
-        return resultTerm;
-    }
-
-    public void setResultTerm(Double resultTerm) {
-        this.resultTerm = resultTerm;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
     }
 
     public ERole geteRole() {
@@ -135,5 +84,33 @@ public class StudentDto extends PersonDto implements Serializable {
 
     public void seteRole(ERole eRole) {
         this.eRole = eRole;
+    }
+
+    public Double getMidTerm() {
+        return midTerm;
+    }
+
+    public void setMidTerm(Double midTerm) {
+        this.midTerm = midTerm;
+        this.resultTerm = calculateResult();
+        this.status = determineStatus();
+    }
+
+    public Double getFinalTerm() {
+        return finalTerm;
+    }
+
+    public void setFinalTerm(Double finalTerm) {
+        this.finalTerm = finalTerm;
+        this.resultTerm = calculateResult();
+        this.status = determineStatus();
+    }
+
+    public Double getResultTerm() {
+        return resultTerm;
+    }
+
+    public String getStatus() {
+        return status;
     }
 }
