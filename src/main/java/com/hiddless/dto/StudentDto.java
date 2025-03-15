@@ -1,7 +1,5 @@
 package com.hiddless.dto;
 
-import com.hiddless.utils.ERole;
-import com.hiddless.utils.EStudentType;
 import com.hiddless.utils.SpecialColours;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;

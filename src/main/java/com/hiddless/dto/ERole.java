@@ -1,4 +1,4 @@
-package com.hiddless.utils;
+package com.hiddless.dto;
 
 public enum ERole {
     STUDENT,
