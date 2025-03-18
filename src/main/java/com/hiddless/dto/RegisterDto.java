@@ -5,91 +5,91 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class RegisterDto {
 
+    private static final Logger logger = Logger.getLogger(RegisterDto.class.getName());
     private int id;
     private String nickname;
     private String emailAddress;
     private String password;
-
-    /// role
+    private boolean isLocked;
     private String role;
-
-    /// composition
     private StudentDto studentDto;
     private TeacherDto teacherDto;
 
-    /// Aes encrypted
     private static final String AES_ALGORITHM = "AES";
-    private static final String SECRET_KEY="MY_SECRET_AES_KEY";
+    private static final String SECRET_KEY = "MY_16_BYTE_KEY_!";
 
-    /// constructor without parameters
     public RegisterDto() {
         this.id = 0;
-        this.nickname= "your_nick_name";
-        this.emailAddress= "your_email.address";
-        this.role = "is not roles";
-        studentDto =null;
-        teacherDto= null;
+        this.nickname = "your_nickname";
+        this.emailAddress = "your_email@example.com";
+        this.password = "default_password";
+        this.role = "UNKNOWN";
+        this.isLocked = false;
+        this.studentDto = null;
+        this.teacherDto = null;
     }
 
-    /// constructor with parameters
-    public RegisterDto(int id, String _nickname, String emailAddress, String password, String role, StudentDto studentDto, TeacherDto teacherDto) {
+    public RegisterDto(int id, String nickname, String emailAddress, String password, String role, boolean isLocked,
+                       StudentDto studentDto, TeacherDto teacherDto) {
         this.id = id;
-        nickname= _nickname;
+        this.nickname = (nickname != null && !nickname.isBlank()) ? nickname.toLowerCase() : "unknown_user";
         this.emailAddress = emailAddress;
-        this.password = password;
-        this.role = role;
+        this.password = encryptPassword(password);
+        this.role = (role != null && !role.isBlank()) ? role.toUpperCase() : "UNKNOWN";
+        this.isLocked = isLocked;
         this.studentDto = studentDto;
         this.teacherDto = teacherDto;
     }
 
-    /// Creating key
     private static SecretKey generateKey() {
-        try {
-            byte[] keyBytes = SECRET_KEY.getBytes(StandardCharsets.UTF_8);
-            return new SecretKeySpec(keyBytes,0,16,AES_ALGORITHM);
-        }catch (Exception exception){
-            exception.printStackTrace();
-            throw new RuntimeException("Encrption Failed", exception);
-        }
+        return new SecretKeySpec(SECRET_KEY.getBytes(StandardCharsets.UTF_8), AES_ALGORITHM);
     }
 
-    /// Methods
-
-    // AES
-    private static String encryptPassword(String password) {
+    public static String encryptPassword(String password) {
+        if (password == null || password.isBlank()) return null;
         try {
-            SecretKey key = generateKey();
             Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
-            cipher.init(Cipher.ENCRYPT_MODE,key);
+            cipher.init(Cipher.ENCRYPT_MODE, generateKey());
             byte[] encryptedBytes = cipher.doFinal(password.getBytes(StandardCharsets.UTF_8));
             return Base64.getEncoder().encodeToString(encryptedBytes);
-        }catch (Exception exception) {
-            exception.printStackTrace();
-            throw new RuntimeException("Encrption Failed", exception);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Encryption failed!", e);
+            return null;
         }
     }
 
-
-    /// AES password solver
-    public static String deEncryptPassword(String encryptedPassword) {
+    public static String decryptPassword(String encryptedPassword) {
+        if (encryptedPassword == null || encryptedPassword.isBlank()) return null;
         try {
-            SecretKey key = generateKey();
             Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
-            cipher.init(Cipher.DECRYPT_MODE , key);
-
-            byte[] decodeBytes = Base64.getDecoder().decode(encryptedPassword);
-            byte[] decryptedBytes = cipher.doFinal(decodeBytes);
+            cipher.init(Cipher.DECRYPT_MODE, generateKey());
+            byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedPassword));
             return new String(decryptedBytes, StandardCharsets.UTF_8);
-        }catch (Exception exception) {
-            exception.printStackTrace();
-            throw new RuntimeException("Encrption Failed", exception);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Decryption failed!", e);
+            return null;
         }
     }
 
-    /// To String
+    public boolean validatePassword(String inputPassword) {
+        String decryptedPassword = decryptPassword(this.password);
+        if (decryptedPassword == null) {
+            logger.severe("Decryption failed! User login verification failed.");
+            return false;
+        }
+        return decryptedPassword.equals(inputPassword);
+    }
+
+
+    public String getDecryptedPassword() {
+        return decryptPassword(this.password);
+    }
+
     @Override
     public String toString() {
         return "RegisterDto{" +
@@ -97,69 +97,31 @@ public class RegisterDto {
                 ", nickname='" + nickname + '\'' +
                 ", emailAddress='" + emailAddress + '\'' +
                 ", role='" + role + '\'' +
-                ", studentDto=" + studentDto +
-                ",teacherDto=" + teacherDto +
+                ", isLocked=" + isLocked +
                 '}';
     }
 
-    /// Getter And Setter
-    public int getId() {
-        return id;
-    }
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    public String getNickname() { return nickname; }
+    public void setNickname(String nickname) { this.nickname = nickname; }
 
-    public String getNickname() {
-        return nickname;
-    }
+    public String getEmailAddress() { return emailAddress; }
+    public void setEmailAddress(String emailAddress) { this.emailAddress = emailAddress; }
 
-    public void setNickname(String nickname) {
-        this.nickname = nickname.toLowerCase();
-    }
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = encryptPassword(password); }
 
-    public String getEmailAddress() {
-        return emailAddress;
-    }
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
 
-    public void setEmailAddress(String emailAddress) {
-        this.emailAddress = emailAddress.concat("@gmail.com");
-    }
+    public boolean isLocked() { return isLocked; }
+    public void setLocked(boolean locked) { isLocked = locked; }
 
-    public String getPassword() {
-        return password;
-    }
+    public StudentDto getStudentDto() { return studentDto; }
+    public void setStudentDto(StudentDto studentDto) { this.studentDto = studentDto; }
 
-    public void setPassword(String password) {
-        try {
-            this.password = encryptPassword(password);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
-
-    public StudentDto getStudentDto() {
-        return studentDto;
-    }
-
-    public void setStudentDto(StudentDto studentDto) {
-        this.studentDto = studentDto;
-    }
-
-    public TeacherDto getTeacherDto() {
-        return teacherDto;
-    }
-
-    public void setTeacherDto(TeacherDto teacherDto) {
-        this.teacherDto = teacherDto;
-    }
+    public TeacherDto getTeacherDto() { return teacherDto; }
+    public void setTeacherDto(TeacherDto teacherDto) { this.teacherDto = teacherDto; }
 }

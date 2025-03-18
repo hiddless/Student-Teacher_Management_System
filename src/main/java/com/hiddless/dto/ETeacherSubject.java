@@ -1,7 +1,7 @@
 package com.hiddless.dto;
 
 public enum ETeacherSubject {
-    MATHMETICS,
+    MATHEMETICS,
     CHEMISTRY,
     BIOLOGY,
     HISTORY,

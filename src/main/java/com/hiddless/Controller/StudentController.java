@@ -9,10 +9,12 @@ import com.hiddless.utils.SpecialColours;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 public class StudentController implements IDaoGenerics<StudentDto> {
 
     /// Injection
+    private static final Logger logger = Logger.getLogger(StudentController.class.getName());
     private final StudentDao studentDao;
 
     /// Constructor without Parameter
@@ -26,13 +28,13 @@ public class StudentController implements IDaoGenerics<StudentDto> {
     @LogExecutionTime
     public Optional<StudentDto> create(StudentDto studentDto) {
         if (studentDto == null || studentDao.findById(studentDto.getId()).isPresent()) {
-            System.out.println(SpecialColours.RED + "Cannot be added due to invalid or existing student. " + SpecialColours.RESET);
+            logger.warning(SpecialColours.RED + "Cannot be added due to invalid or existing student. " + SpecialColours.RESET);
             return Optional.empty();
         }
         Optional<StudentDto> createdStudent = studentDao.create(studentDto);
         createdStudent.ifPresentOrElse(
-                temp -> System.out.println(SpecialColours.GREEN + "Student added." +SpecialColours.RESET),
-                () -> System.out.println(SpecialColours.RED + " Cannot add the Student" + SpecialColours.RESET));
+                temp -> logger.info(SpecialColours.GREEN + "Student added." +SpecialColours.RESET),
+                () -> logger.warning(SpecialColours.RED + " Cannot add the Student" + SpecialColours.RESET));
         return createdStudent;
     }
 
@@ -54,16 +56,19 @@ public class StudentController implements IDaoGenerics<StudentDto> {
         if (id <= 0) {
             throw new IllegalArgumentException("You have entered an invalid id.");
         }
-        return studentDao.findById(id);
+        return studentDao.findById(id).or(() -> {
+            logger.warning("Student not exists");
+            return Optional.empty();
+        });
     }
 
     /// List
     @Override
     @LogExecutionTime
     public List<StudentDto> list() {
-        List<StudentDto> studentDtoList = Optional.of(studentDao.list()).orElse(Collections.emptyList());
+        List<StudentDto> studentDtoList = Optional.ofNullable(studentDao.list()).orElse(Collections.emptyList());
         if (studentDtoList.isEmpty()) {
-            System.out.println(SpecialColours.RED + "Student list is empty."+ SpecialColours.RESET);
+            logger.info(SpecialColours.RED + "Student list is empty."+ SpecialColours.RESET);
         }
         return studentDtoList;
     }
@@ -85,13 +90,14 @@ public class StudentController implements IDaoGenerics<StudentDto> {
         if (id <= 0) {
             throw new IllegalArgumentException("Enter a valid Student ID");
         }
-        return studentDao.delete(id);
+        return studentDao.delete(id).or(() -> {
+            logger.warning("There is no student");
+            return Optional.empty();
+        });
     }
 
-    /// Chooise
-    @Override
-    @LogExecutionTime
-    public void chooise() {
-        studentDao.chooise();
+    /// Choose
+    public void choose() {
+        studentDao.choose();
     }
 }

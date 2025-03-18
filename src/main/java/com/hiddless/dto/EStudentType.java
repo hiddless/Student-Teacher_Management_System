@@ -5,4 +5,5 @@ public enum EStudentType {
     GRADUATE,
     PHD,
     OTHER
+
 }

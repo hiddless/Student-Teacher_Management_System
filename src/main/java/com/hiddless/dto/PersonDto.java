@@ -9,25 +9,27 @@ abstract public class PersonDto {
     protected String name;
     protected String surname;
     protected LocalDate birthDate;
-    protected Date createdDate;
+    protected final Date createdDate;
 
-    /// Constructor without Parameter
+
     public PersonDto() {
         this.id = 0;
-        this.name = "name unknown";
-        this.surname = "surname unknown";
-        this.birthDate= LocalDate.now();
-        this.createdDate = new Date(System.currentTimeMillis());
+        this.name = "Unknown";
+        this.surname = "Unknown";
+        this.birthDate = LocalDate.now();
+        this.createdDate = new Date();
     }
 
-    /// Constructor with Parameter
-    public PersonDto(Integer id ,String name, String surname, LocalDate birthDate) {
-        this.id = id;
-        this.name = name;
-        this.surname = surname;
-        this.birthDate = birthDate;
-        this.createdDate = new Date(System.currentTimeMillis());
+
+    public PersonDto(Integer id, String name, String surname, LocalDate birthDate) {
+        this.id = (id != null) ? id : 0;
+        this.name = (name != null && !name.isBlank()) ? name : "Unknown";
+        this.surname = (surname != null && !surname.isBlank()) ? surname : "Unknown";
+        this.birthDate = (birthDate != null) ? birthDate : LocalDate.now();
+        this.createdDate = new Date();
     }
+
+    public abstract void displayInfo();
 
     @Override
     public String toString() {
@@ -40,14 +42,20 @@ abstract public class PersonDto {
                 '}';
     }
 
-    abstract public void displayInfo();
-
     public Integer getId() {
         return id;
     }
 
+    public void setId(Integer id) {
+        this.id = (id != null) ? id : 0;
+    }
+
+    public String getName() {
+        return name;
+    }
+
     public void setName(String name) {
-        this.name = name;
+        this.name = (name != null && !name.isBlank()) ? name : "Unknown";
     }
 
     public String getSurname() {
@@ -55,7 +63,7 @@ abstract public class PersonDto {
     }
 
     public void setSurname(String surname) {
-        this.surname = surname;
+        this.surname = (surname != null && !surname.isBlank()) ? surname : "Unknown";
     }
 
     public LocalDate getBirthDate() {
@@ -63,10 +71,10 @@ abstract public class PersonDto {
     }
 
     public void setBirthDate(LocalDate birthDate) {
-        this.birthDate = birthDate;
+        this.birthDate = (birthDate != null) ? birthDate : LocalDate.now();
     }
 
-    public void setCreatedDate(Date createdDate) {
-        this.createdDate = createdDate;
+    public Date getCreatedDate() {
+        return createdDate;
     }
 }

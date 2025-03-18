@@ -2,132 +2,151 @@ package com.hiddless.dao;
 
 import com.hiddless.dto.RegisterDto;
 import com.hiddless.exceptions.RegisterNotFoundException;
-import com.hiddless.iofiles.FileHandler;
+import com.hiddless.iofiles.SpecialFileHandler;
 import com.hiddless.utils.SpecialColours;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 public class RegisterDao implements IDaoGenerics<RegisterDto> {
 
     /// Field
+    public static final Logger logger = Logger.getLogger(RegisterDto.class.getName());
     private final List<RegisterDto> registerDtoList;
-
-    /// File Handler
-    private FileHandler fileHandler;
-    private String filePath;
-
+    private final SpecialFileHandler fileHandler;
 
     /// static
     static {
-        System.out.println(SpecialColours.RED + " Static: RegisterDao" + SpecialColours.RESET);
+        System.out.println(SpecialColours.RED + " Static: RegisterDao Initialized" + SpecialColours.RESET);
     }
-
-    /// Constructor without Parameters
     public RegisterDao() {
-        this.fileHandler= new FileHandler();
+        this.fileHandler = new SpecialFileHandler();
         this.fileHandler.setFilePath("registers.txt");
-
-        registerDtoList = new ArrayList<>();
-
+        this.registerDtoList = new ArrayList<>();
         this.fileHandler.createFileIfNotExists();
 
-        this.fileHandler.readFile(this.fileHandler.getFilePath());
+        List<String> fileLines = this.fileHandler.readFile();
+        for (String line : fileLines) {
+            RegisterDto register = csvToRegister(line);
+            if (register != null) {
+                registerDtoList.add(register);
+            }
+        }
     }
 
-    /// Random generate new id
-    private int generateNewId() {
-        return registerDtoList
-                .stream()
-                .mapToInt(RegisterDto::getId)
-                .max()
-                .orElse(0) + 1;
+    public int generateNewId() {
+        return registerDtoList.isEmpty() ? 1 :
+                registerDtoList.stream().mapToInt(RegisterDto::getId).max().orElse(0) + 1;
     }
-
-    /// register to CSV
 
     private String registerToCsv(RegisterDto registerDto) {
-        return
-                registerDto.getId() +"," +
-                        registerDto.getNickname() + "," +
-                        registerDto.getEmailAddress() + "," +
-                        registerDto.getPassword() + "," +
-                        registerDto.getRole();
+        return String.join("|",
+                String.valueOf(registerDto.getId()),
+                registerDto.getNickname(),
+                registerDto.getEmailAddress(),
+                registerDto.getPassword(),
+                String.valueOf(registerDto.isLocked()),
+                registerDto.getRole()
+        );
     }
 
-
-    /// studentdto to CSV
     private RegisterDto csvToRegister(String csvLine) {
         try {
-            String[] parts = csvLine.split(",");
-            if (parts.length < 6) {
-                System.err.println("X Wrong CSV" +csvLine);
-                return null;
-            }
-            int id = generateNewId();
-            return new RegisterDto(id, parts[0], parts[1], parts[2], parts[3],Boolean.valueOf(parts[4]) , null, null);
-        }catch (Exception e) {
-            System.out.println(SpecialColours.RED + "Failed to Download from CSV!" + SpecialColours.RESET);
+            String[] parts = csvLine.split("\\|");
+            if (parts.length < 6) return null;
+
+            return new RegisterDto(
+                    Integer.parseInt(parts[0]),
+                    parts[1],
+                    parts[2],
+                    parts[3],
+                    parts[5],
+                    Boolean.parseBoolean(parts[4]),
+                    null,
+                    null
+            );
+        } catch (Exception e) {
+            logger.warning("Incorrect record line: " + csvLine);
             return null;
         }
-
     }
 
 
-    //////////////////////////////////////////////////////////////////////
-
-    /// Create
     @Override
     public Optional<RegisterDto> create(RegisterDto registerDto) {
         registerDtoList.add(registerDto);
-        this.fileHandler.writeFile(this.fileHandler.getFilePath());
+        fileHandler.writeFile(registerToCsv(registerDto));
         return Optional.of(registerDto);
     }
 
-    /// List
     @Override
     public List<RegisterDto> list() {
-        if (registerDtoList.isEmpty()) {
-            throw new RegisterNotFoundException(SpecialColours.RED + "List is empty" +SpecialColours.RESET);
-        }
         return new ArrayList<>(registerDtoList);
     }
 
-    /// Find by nickname
     @Override
     public Optional<RegisterDto> findByName(String nickName) {
-        return registerDtoList
-                .stream()
+        return registerDtoList.stream()
                 .filter(s -> s.getNickname().equalsIgnoreCase(nickName))
                 .findFirst();
     }
 
-    /// Update
+    public Optional<RegisterDto> findByEmail(String email) {
+        return registerDtoList.stream()
+                .filter(s -> s.getEmailAddress().equals(email))
+                .findFirst();
+    }
+
+    @Override
+    public Optional<RegisterDto> findById(int id) {
+        return registerDtoList.stream()
+                .filter(s -> s.getId() == id)
+                .findFirst();
+    }
+
+    public void overwriteFile() {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileHandler.getFilePath(), false))) {
+            for (RegisterDto register : registerDtoList) {
+                writer.write(registerToCsv(register));
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            logger.severe("Error writing to file: " + e.getMessage());
+        }
+    }
+
     @Override
     public Optional<RegisterDto> update(int id, RegisterDto registerDto) {
-        if (registerDto != null) {
-            for (int i = 0; i < registerDtoList.size(); i++){
-                if (registerDtoList.get(i).getId() == id) {
-                    registerDtoList.set(i, registerDto);
-                    this.fileHandler.writeFile(this.fileHandler.getFilePath());
-                }
+        for (int i = 0; i < registerDtoList.size(); i++) {
+            if (registerDtoList.get(i).getId() == id) {
+                registerDtoList.set(i, registerDto);
+                overwriteFile();
+                return Optional.of(registerDto);
             }
         }
-        throw new RegisterNotFoundException("Not found any person to update");
+        throw new RegisterNotFoundException("No record found.");
     }
 
-    /// Delete
     @Override
     public Optional<RegisterDto> delete(int id) {
-        return Optional.empty();
+        Optional<RegisterDto> registerToDelete = findById(id);
+        if (registerToDelete.isPresent()) {
+            registerDtoList.remove(registerToDelete.get());
+            overwriteFile();
+            logger.info("User Deleted: " + registerToDelete.get().getEmailAddress());
+            return registerToDelete;
+        } else {
+            logger.warning("The user could not be deleted because it was not found. ID: " + id);
+            return Optional.empty();
+        }
     }
-
-    //////////////////////////////////////////////////////////////////////
 
     @Override
-    public void chooise() {
-
+    public void choose() {
     }
-
 }
