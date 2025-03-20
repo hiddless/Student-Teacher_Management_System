@@ -10,4 +10,4 @@ public class RegisterNotFoundException extends RuntimeException {
         super(message);
     }
 }
-}
+

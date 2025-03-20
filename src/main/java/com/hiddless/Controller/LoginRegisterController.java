@@ -46,7 +46,7 @@ public class LoginRegisterController {
         Map<String, Integer> loginAttemts = new HashMap<>();
 
         while (true) {
-            System.out.println("\n==== Login ====");
+            System.out.println("\n==== Login ==== *By Hiddless");
             System.out.println("Email: ");
             String email = scanner.nextLine().trim();
             System.out.println("Password: ");
