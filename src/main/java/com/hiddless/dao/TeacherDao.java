@@ -260,8 +260,8 @@ public class TeacherDao implements IDaoGenerics<TeacherDto> {
         System.out.print("Surname: ");
         String surname = scanner.nextLine();
 
-        System.out.print("Birth Date (dd-mm-yyyy): ");
-        LocalDate birthDate = LocalDate.parse(scanner.nextLine(), DateTimeFormatter.ofPattern("dd-mm-yyyy"));
+        System.out.print("Birth Date (YYYY-MM-DD): ");
+        LocalDate birthDate = LocalDate.parse(scanner.nextLine(), DateTimeFormatter.ofPattern("YYYY-DD-MM"));
 
         System.out.print("Profession: ");
         ETeacherSubject subject = teacherTypeMethod();

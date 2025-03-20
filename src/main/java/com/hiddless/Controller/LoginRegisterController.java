@@ -103,11 +103,11 @@ public class LoginRegisterController {
 
         while (true) {
             try {
-                System.out.println("Birth Date (MM-DD-YYYY): ");
+                System.out.println("Birth Date (YYYY-MM-DD): ");
                 birthDate = LocalDate.parse(scanner.nextLine().trim());
                 break;
             }catch (DateTimeException e) {
-                System.out.println("Wrong Date Format! Please try again (MM-DD-YYYY)");
+                System.out.println("Wrong Date Format! Please try again (YYYY-MM-DD)");
             }
         }
 
